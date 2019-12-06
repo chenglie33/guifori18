@@ -1,11 +1,12 @@
 "use strict";
 
-import { app, protocol, BrowserWindow } from "electron";
+import { app, protocol, BrowserWindow,ipcMain } from "electron";
 import {
   createProtocol,
   installVueDevtools
 } from "vue-cli-plugin-electron-builder/lib";
 
+import { FileClassJson } from "./util/FileClass";
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -94,3 +95,35 @@ if (isDevelopment) {
     });
   }
 }
+declare global {
+  namespace NodeJS {
+    interface Global {
+      fobj: any;
+    }
+  }
+}
+ipcMain.on('fileObj', (event, arg) => {
+  global.fobj = new FileClassJson(
+    arg.filepath,
+    arg.filepathout,
+    arg.keyv ? arg.keyv.toUpperCase() : "A"
+  );
+  let sheets = global.fobj.workbook.SheetNames;
+  let checkedsheet = global.fobj.workbook.SheetNames;
+  global.fobj.setoutPath(arg.filepathout);
+  event.reply('fileObj-reply', checkedsheet)
+})
+
+ipcMain.on('checkSheets', (event, arg) => {
+  global.fobj.checkSheet(
+    arg.checkedsheet,
+    arg.isusereg,
+    arg.keyv,
+    arg.keyreg,
+    arg.filetype
+  );
+  event.reply('checkSheets-reply', global.fobj.repeatkey)
+})
+ipcMain.on('setpath', (event, arg) => {
+  global.fobj.setoutPath(arg)
+})

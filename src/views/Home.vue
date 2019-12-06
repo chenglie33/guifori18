@@ -42,6 +42,16 @@
           </div>
         </el-col>
       </el-row>
+      <el-row :gutter="20" class="mb" v-if="isusereg">
+        <el-col :span="5">
+          <div class="grid-content bg-purple">文件后缀：</div>
+        </el-col>
+        <el-col :span="15">
+          <div class="grid-content bg-purple">
+            <el-input v-model="filetype" placeholder="默认js"></el-input>
+          </div>
+        </el-col>
+      </el-row>
       <el-row class="mb">
         <el-col :span="12">
           <div class="grid-content bg-purple">
@@ -140,6 +150,7 @@
       </el-row>
     </div>
     <div>
+      ---重复的key---
       <ul class="infinite-list" style="overflow:auto">
         <li v-for="i in message" class="infinite-list-item tal" :key="i">
           {{ i }}
@@ -152,8 +163,8 @@
 <script>
 // @ is an alias to /src
 // import HelloWorld from "@/components/HelloWorld.vue";
-import { FileClassJson } from "@/util/FileClass";
-
+// import { FileClassJson } from "@/util/FileClass";
+const { ipcRenderer } = require("electron");
 export default {
   name: "home",
   components: {
@@ -161,8 +172,11 @@ export default {
   },
   data() {
     return {
+      fileObjreply: null,
+      checkSheetsreply: null,
       isusereg: true,
       message: [],
+      filetype: "",
       filepath: "",
       filepathout: "",
       loading: false,
@@ -181,14 +195,20 @@ export default {
       this.loading = true;
       setTimeout(() => {
         this.filepath = e.raw.path;
-        this.fobj = new FileClassJson(
-          e.raw.path,
-          "/Users/chenlei/Desktop/tt",
-          this.keyv ? this.keyv.toUpperCase() : "A"
-        );
-        this.sheets = this.fobj.workbook.SheetNames;
-        this.checkedsheet = this.fobj.workbook.SheetNames;
-        this.loading = false;
+        localStorage.setItem("filepath", this.filepath);
+        ipcRenderer.send("fileObj", {
+          filepath: this.filepath,
+          filepathout: this.filepathout,
+          keyv: this.keyv ? this.keyv.toUpperCase() : "A"
+        });
+        // this.fobj = new FileClassJson(
+        //   e.raw.path,
+        //   this.filepathout,
+        //   this.keyv ? this.keyv.toUpperCase() : "A"
+        // );
+        // this.sheets = this.fobj.workbook.SheetNames;
+        // this.checkedsheet = this.fobj.workbook.SheetNames;
+        // this.loading = false;
       }, 500);
     },
     handleCheckedSheetChange() {},
@@ -198,27 +218,75 @@ export default {
     },
     changepath(e) {
       this.filepathout = e.target.files[0].path;
-      this.fobj.setoutPath = this.filepathout;
+      localStorage.setItem("filepathout", this.filepathout);
+      // this.fobj.setoutPath(this.filepathout);
+      ipcRenderer.send("setpath", this.filepathout);
     },
     bup() {
       return false;
     },
     outMe() {
       this.isoutloading = true;
-      this.fobj.checkSheet(
-        this.checkedsheet,
-        this.isusereg,
-        this.keyv,
-        this.isusereg ? (!this.keyreg ? "&" : this.keyreg) : ""
-      );
-      this.isoutloading = false;
-      this.message = this.fobj.repeatkey;
+      setTimeout(() => {
+        ipcRenderer.send("checkSheets", {
+          checkedsheet: this.checkedsheet,
+          isusereg: this.isusereg,
+          keyv: this.keyv,
+          keyreg: this.isusereg ? (!this.keyreg ? "&" : this.keyreg) : "",
+          filetype: this.filetype
+        });
+        // this.fobj.checkSheet(
+        //   this.checkedsheet,
+        //   this.isusereg,
+        //   this.keyv,
+        //   this.isusereg ? (!this.keyreg ? "&" : this.keyreg) : "",
+        //   this.filetype
+        // );
+        // this.isoutloading = false;
+        // this.message = this.fobj.repeatkey;
+      }, 200);
     }
   },
   mounted() {
+    let that = this;
+    this.fileObjreply = (event, arg) => {
+      that.sheets = arg;
+      that.checkedsheet = arg;
+      that.loading = false;
+    };
+    this.checkSheetsreply = (event, arg) => {
+      that.isoutloading = false;
+      that.message = arg;
+    };
+    ipcRenderer.on("fileObj-reply", this.fileObjreply);
+    ipcRenderer.on("checkSheets-reply", this.checkSheetsreply);
     // message.sub('getRepeat',{})
+    let filepathout = localStorage.getItem("filepathout");
+    let filepath = localStorage.getItem("filepath");
+    this.filepath = filepath ? filepath : "";
+    this.filepathout = filepathout ? filepathout : "";
+    if (!filepath) return;
+    this.loading = true;
+    setTimeout(() => {
+      ipcRenderer.send("fileObj", {
+        filepath: this.filepath,
+        filepathout: this.filepathout,
+        keyv: this.keyv ? this.keyv.toUpperCase() : "A"
+      });
+      // this.fobj = new FileClassJson(
+      //   this.filepath,
+      //   this.filepathout,
+      //   this.keyv ? this.keyv.toUpperCase() : "A"
+      // );
+      // this.sheets = this.fobj.workbook.SheetNames;
+      // this.checkedsheet = this.fobj.workbook.SheetNames;
+      // this.fobj.setoutPath(this.filepathout);
+      // this.loading = false;
+    }, 500);
   },
   destroyed() {
+    ipcRenderer.removeListener("fileObj-reply", this.fileObjreply);
+    ipcRenderer.removeListener("checkSheets-reply", this.checkSheetsreply);
     // message.removeSub()
   }
 };
@@ -247,5 +315,8 @@ export default {
 }
 .infinite-list {
   background-color: #f9f9f9;
+}
+.bg-purple-light {
+  text-align: right;
 }
 </style>

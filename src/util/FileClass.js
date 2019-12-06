@@ -1,4 +1,5 @@
 const XLSX = require("xlsx-style");
+
 var fs = require("fs");
 // import { MessageCenter } from "utiltool-pubsub";
 // let message = new MessageCenter();
@@ -6,6 +7,7 @@ class FileClassJson {
   constructor(filename, outfilePath, keycell) {
     this.repeatkey = [];
     this.regValue = "&";
+    this.filetype = "js";
     this.filename = filename;
     this.outfilePath = outfilePath;
     this.keycell = keycell;
@@ -91,7 +93,9 @@ class FileClassJson {
   // 写入JSON读取添加
   appendJson(name, dataJson) {
     try {
-      let data = fs.readFileSync(`${this.outfilePath}/${this.xName}.js`);
+      let data = fs.readFileSync(
+        `${this.outfilePath}/${this.xName}.${this.filetype}`
+      );
       let resData = JSON.parse(data);
       // console.log("读取文件成功："+JSON.parse(data))
       // console.log(JSON.stringify(Object.assign(JSON.parse(data),dataJson)))
@@ -107,25 +111,28 @@ class FileClassJson {
       }
       this.writeJson(name, Object.assign(JSON.parse(data), dataJson));
     } catch (err) {
-      console.log("读取文件失败：" + err.message);
+      // console.log("读取文件失败：" + err.message);
       this.writeJson(name, dataJson);
     }
   }
   writeJson(name, dataJson) {
     try {
       fs.writeFileSync(
-        `${this.outfilePath}/${this.xName}.js`,
+        `${this.outfilePath}/${this.xName}.${this.filetype}`,
         JSON.stringify(dataJson, null, 2),
         "utf8"
       );
     } catch (err) {
       if (err) throw err;
     }
-    console.log("done");
+    // console.log("done");
   }
-  checkSheet(sheetArr, isusereg, keyArr, keyvalue) {
+  checkSheet(sheetArr, isusereg, keyArr, keyvalue, filetype) {
     this.repeatkey = [];
-    let keyArrs = keyArr.split(",");
+    if (filetype) {
+      this.filetype = filetype;
+    }
+    let keyArrs = keyArr ? keyArr.split(",") : this.keycell.split(",");
     this.regValue = keyvalue;
     keyArrs.forEach(itemkey => {
       this.keycell = itemkey;
