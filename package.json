@@ -12,7 +12,8 @@
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
-    "bb": "babel-node tests/babylontest.js"
+    "bb": "babel-node tests/babylontest.js",
+    "inspect": "node --inspect-brk=9229 E:/guifori18/src/util/excelToConfig.js"
   },
   "main": "background.js",
   "dependencies": {
