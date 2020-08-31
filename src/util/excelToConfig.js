@@ -8,14 +8,14 @@ class OutExcel {
     this.arrForkey = []; // 数组比对其 负责第二层数据的比对工作
     this.outJson = [];
     this.workbook = XLSX.readFile(filePath);
-    this.SheetsName = this.workbook.SheetNames[7];
+    this.SheetsName = this.workbook.SheetNames[8];
     this.worksheet = this.workbook.Sheets[this.SheetsName];
     this.cellName_groupName = "C"; // 指令组名称的列
     this.cellName_groupName_t = "D"; // 指令组名称的列的翻译
     this.cellName_groupName_key = "B"; // 指令组名对应的key
     this.cellName_group_name = "E"; // 组下指令的中文
     this.cellName_group_name_t = "F"; // 组下指令中文的key
-    this.cellName_group_code = "I"; // 组下指令中文的key
+    this.cellName_group_code = "I"; // 组下指令code
     this.cellName_group_type = "N"; // 组下指令类型 input 或 select
     this.cellName_group_area = "O"; // 输入框类型下的输入范围
     this.cellName_group_unit = "M"; // 单位
@@ -35,7 +35,7 @@ class OutExcel {
           code: spliteCode[0],
           codeR: spliteCode[1],
           codeS: spliteCode[2],
-          cmdList: [],
+          cmdList: []
         });
       } else {
         this.arrForkey[this.arrForkey.length - 1].push(i);
@@ -49,21 +49,21 @@ class OutExcel {
         let childItem = {
           name: [
             `${this.worksheet[this.cellName_group_name_t + itemS].v}`,
-            `${this.worksheet[this.cellName_group_name + itemS].v}`,
+            `${this.worksheet[this.cellName_group_name + itemS].v}`
           ],
           code: `${this.worksheet[this.cellName_group_code + itemS].v.substring(
             2,
             this.worksheet[this.cellName_group_code + itemS].v.length
           )}`,
           tip: ["", ""],
-          errorTip: ["", ""],
+          errorTip: ["", ""]
         };
         switch (this.worksheet[this.cellName_group_type + itemS].v) {
           case "输入框":
             childItem.type = "input";
             childItem.placeholder = [
               `${this.worksheet[this.cellName_group_area + itemS].v}`,
-              `${this.worksheet[this.cellName_group_area + itemS].v}`,
+              `${this.worksheet[this.cellName_group_area + itemS].v}`
             ];
             childItem.rule = {};
             childItem.rule.area = [
@@ -77,14 +77,18 @@ class OutExcel {
                   this.worksheet[this.cellName_group_area + itemS].v.split(
                     "~"
                   )[1]
-                }`,
-              ],
+                }`
+              ]
             ];
-            var fNumber = this.worksheet[this.cellName_group_area + itemS].v.split("~")[0];
+            var fNumber = this.worksheet[
+              this.cellName_group_area + itemS
+            ].v.split("~")[0];
             var numtype;
 
             // 判断但是输入框的matchType以及only
-            var beilv = this.worksheet[this.cellName_group_numtype + itemS].v.toString()
+            var beilv = this.worksheet[
+              this.cellName_group_numtype + itemS
+            ].v.toString();
             if (beilv === "1" && fNumber >= 0) {
               childItem.rule.matchType = "absInt";
               childItem.rule.only = "absInt";
@@ -109,37 +113,39 @@ class OutExcel {
             childItem.rule.verification =
               `notEmpty,~:` +
               `${this.worksheet[this.cellName_group_area + itemS].v}`;
-         
+
             childItem.tip = ["", ""];
             childItem.errorTip = ["", ""];
             childItem.unit = [
               `${this.worksheet[this.cellName_group_unit + itemS].v}`,
-              `${this.worksheet[this.cellName_group_unit + itemS].v}`,
+              `${this.worksheet[this.cellName_group_unit + itemS].v}`
             ];
             break;
           case "选项框":
             childItem.type = "select";
-            childItem.list = [{"value":"","text":["word806","请选择"],"token":true}];
-            var selectValue = this.worksheet[this.cellName_group_area + itemS].v;
+            childItem.list = [
+              { value: "", text: ["word806", "请选择"], token: true }
+            ];
+            var selectValue = this.worksheet[this.cellName_group_area + itemS]
+              .v;
             var slectarr = selectValue.split("&&");
             slectarr.forEach(item => {
-              var childItems = item.split(",")
+              var childItems = item.split(",");
               // console.log(childItems)
               childItem.list.push({
-                "value":childItems[2],
-                "text":[childItems[1],childItems[0]]
-              })
-              
-            })
+                value: childItems[2],
+                text: [childItems[1], childItems[0]]
+              });
+            });
             break;
         }
-        
-        let ifcode = this.worksheet[this.cellName_group_ifCode + itemS].v
-        if (ifcode && ifcode.trim().length>0) {
+
+        let ifcode = this.worksheet[this.cellName_group_ifCode + itemS].v;
+        if (ifcode && ifcode.trim().length > 0) {
           childItem.specialProcess = {
             targetCodeValue: ifcode,
-            "action":"show"
-          }
+            action: "show"
+          };
         }
         this.outJson[indexF].cmdList.push(childItem);
       });
