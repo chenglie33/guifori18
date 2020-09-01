@@ -23,6 +23,11 @@
 
                 <!-- <span slot="title"></span> -->
               </el-menu-item>
+              <el-menu-item index="4">
+                <router-link class="router-link" tag="div" to="/order"
+                  ><i class="el-icon-guide" /><br /><br />指令配置</router-link
+                >
+              </el-menu-item>
               <el-menu-item index="3">
                 <router-link class="router-link" tag="div" to="/about"
                   ><i class="el-icon-chat-round" /><br /><br />关于</router-link
