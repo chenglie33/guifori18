@@ -8,7 +8,7 @@ class OutExcel {
     this.arrForkey = []; // 数组比对其 负责第二层数据的比对工作
     this.outJson = [];
     this.workbook = XLSX.readFile(filePath);
-    this.SheetsName = this.workbook.SheetNames[8];
+    this.SheetsName = this.workbook.SheetNames[0];
     this.worksheet = this.workbook.Sheets[this.SheetsName];
     this.cellName_groupName = "C"; // 指令组名称的列
     this.cellName_groupName_t = "D"; // 指令组名称的列的翻译
@@ -54,13 +54,13 @@ class OutExcel {
           code: `${this.worksheet[this.cellName_group_code + itemS].v.substring(
             2,
             this.worksheet[this.cellName_group_code + itemS].v.length
-          )}`,
-          tip: ["", ""],
-          errorTip: ["", ""]
+          )}`
         };
         switch (this.worksheet[this.cellName_group_type + itemS].v) {
           case "输入框":
             childItem.type = "input";
+            childItem.errorTip = ["", ""]
+            childItem.tip = ["", ""]
             childItem.placeholder = [
               `${this.worksheet[this.cellName_group_area + itemS].v}`,
               `${this.worksheet[this.cellName_group_area + itemS].v}`
@@ -133,14 +133,14 @@ class OutExcel {
               var childItems = item.split(",");
               // console.log(childItems)
               childItem.list.push({
-                value: childItems[2],
-                text: [childItems[1], childItems[0]]
+                value: childItems[0],
+                text: [childItems[1], childItems[2]]
               });
             });
             break;
         }
 
-        let ifcode = this.worksheet[this.cellName_group_ifCode + itemS].v;
+        let ifcode = this.worksheet[this.cellName_group_ifCode + itemS] ? this.worksheet[this.cellName_group_ifCode + itemS].v : ''
         if (ifcode && ifcode.trim().length > 0) {
           childItem.specialProcess = {
             targetCodeValue: ifcode,
@@ -166,5 +166,5 @@ class OutExcel {
   }
 }
 
-let outExcel = new OutExcel(2, 52, "C:/Users/IGENUI/Desktop/批量指令规则.xlsx");
+let outExcel = new OutExcel(2, 25, "C:/Users/IGENUI/Desktop/测试批量任务.xlsx");
 outExcel.outExcel();

@@ -13,7 +13,8 @@
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
     "bb": "babel-node tests/babylontest.js",
-    "inspect": "node --inspect-brk=9229 E:/guifori18/src/util/excelToConfig.js"
+    "inspect": "node --inspect-brk=9229 E:/guifori18/src/util/excelToConfig.js",
+    "inspectSingle": "node --inspect-brk=9229 E:/guifori18/src/util/excelSingle.js"
   },
   "main": "background.js",
   "dependencies": {
